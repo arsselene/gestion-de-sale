@@ -7,8 +7,19 @@ import { ClassroomsPage } from "./classrooms-page"
 import { SchedulePage } from "./schedule-page"
 import { DoorControlPage } from "./door-control-page"
 import { ProfessorsPage } from "./professors-page"
+import { SettingsPage } from "./settings-page"
+import { AddSchedulePage } from "./add-schedule-page"
+import { ProfessorSchedulePage } from "./professor-schedule-page"
 
-type Page = "dashboard" | "classrooms" | "schedule" | "doors" | "professors"
+type Page =
+  | "dashboard"
+  | "classrooms"
+  | "schedule"
+  | "professor-schedule"
+  | "doors"
+  | "professors"
+  | "settings"
+  | "add-schedule"
 
 export function Dashboard() {
   const [currentPage, setCurrentPage] = useState<Page>("dashboard")
@@ -20,8 +31,11 @@ export function Dashboard() {
         {currentPage === "dashboard" && <DashboardOverview />}
         {currentPage === "classrooms" && <ClassroomsPage />}
         {currentPage === "schedule" && <SchedulePage />}
+        {currentPage === "professor-schedule" && <ProfessorSchedulePage />}
         {currentPage === "doors" && <DoorControlPage />}
         {currentPage === "professors" && <ProfessorsPage />}
+        {currentPage === "settings" && <SettingsPage />}
+        {currentPage === "add-schedule" && <AddSchedulePage />}
       </main>
     </div>
   )
