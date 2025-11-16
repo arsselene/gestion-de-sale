@@ -12,6 +12,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "classrooms", label: "Classrooms", icon: Layers },
     { id: "schedule", label: "Schedule", icon: Calendar },
+    { id: "professor-schedule", label: "Prof. Schedule", icon: Users },
     { id: "doors", label: "Door Control", icon: DoorOpen },
     { id: "professors", label: "Professors", icon: Users },
     { id: "settings", label: "Settings", icon: Settings },
