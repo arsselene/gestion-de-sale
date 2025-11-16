@@ -2,14 +2,21 @@
 
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
-import { Lock, Unlock } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Lock, Unlock, Plus, Trash2 } from 'lucide-react'
 import { mockClassrooms, mockClassSessions, type ClassSession } from "@/lib/real-time-data"
+import { useClassroomsStorage } from "@/hooks/use-classrooms-storage"
+import { AddClassroomDialog } from "./add-classroom-dialog"
 
 const DAYS = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi"]
 const TIME_SLOTS = ["08:15-09:45", "10:00-11:30", "11:45-13:15", "14:00-15:30", "15:30-17:00", "17:00-18:30"]
 
 export function ClassroomsPage() {
+  const { classrooms, addClassroom, deleteClassroom, isLoaded } = useClassroomsStorage(mockClassrooms)
   const [selectedClassroom, setSelectedClassroom] = useState(mockClassrooms[0])
+  const [showAddDialog, setShowAddDialog] = useState(false)
+
+  const currentSelected = classrooms.find((c) => c.id === selectedClassroom.id) || classrooms[0]
 
   const getClassForSlot = (classroomId: string, day: string, timeSlot: string): ClassSession | null => {
     return (
@@ -21,7 +28,6 @@ export function ClassroomsPage() {
   }
 
   const isClassroomLocked = (classroomId: string): boolean => {
-    // Classroom is locked if no current class is in session
     const now = new Date()
     const currentHour = now.getHours()
     const currentMinutes = now.getMinutes()
@@ -35,6 +41,10 @@ export function ClassroomsPage() {
     return !hasCurrentClass
   }
 
+  if (!isLoaded) {
+    return <div className="p-8">Loading...</div>
+  }
+
   return (
     <div className="p-8">
       <div className="mb-8">
@@ -46,31 +56,51 @@ export function ClassroomsPage() {
         {/* Classrooms Sidebar */}
         <div className="lg:col-span-1">
           <Card className="p-4 h-fit">
-            <h3 className="font-semibold text-foreground mb-4">Classrooms</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-foreground">Classrooms</h3>
+              <Button
+                onClick={() => setShowAddDialog(true)}
+                size="sm"
+                variant="ghost"
+                className="text-primary hover:bg-primary/10"
+              >
+                <Plus size={16} />
+              </Button>
+            </div>
             <div className="space-y-2">
-              {mockClassrooms.map((classroom) => (
-                <button
+              {classrooms.map((classroom) => (
+                <div
                   key={classroom.id}
-                  onClick={() => setSelectedClassroom(classroom)}
-                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                    selectedClassroom?.id === classroom.id
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted bg-muted/50"
-                  }`}
+                  className="flex items-center gap-2 group"
                 >
-                  <div className="font-medium text-sm">{classroom.name}</div>
-                  <div className="text-xs opacity-75 flex items-center gap-1 mt-1">
-                    {isClassroomLocked(classroom.id) ? (
-                      <>
-                        <Lock size={12} /> Locked
-                      </>
-                    ) : (
-                      <>
-                        <Unlock size={12} /> Open
-                      </>
-                    )}
-                  </div>
-                </button>
+                  <button
+                    onClick={() => setSelectedClassroom(classroom)}
+                    className={`flex-1 text-left px-4 py-3 rounded-lg transition-colors ${
+                      currentSelected?.id === classroom.id
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-muted bg-muted/50"
+                    }`}
+                  >
+                    <div className="font-medium text-sm">{classroom.name}</div>
+                    <div className="text-xs opacity-75 flex items-center gap-1 mt-1">
+                      {isClassroomLocked(classroom.id) ? (
+                        <>
+                          <Lock size={12} /> Locked
+                        </>
+                      ) : (
+                        <>
+                          <Unlock size={12} /> Open
+                        </>
+                      )}
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => deleteClassroom(classroom.id)}
+                    className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-500 transition-all p-2"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               ))}
             </div>
           </Card>
@@ -81,14 +111,14 @@ export function ClassroomsPage() {
           <Card className="p-6">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-2xl font-bold text-foreground">{selectedClassroom.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1">Capacity: {selectedClassroom.capacity}</p>
+                <h3 className="text-2xl font-bold text-foreground">{currentSelected?.name}</h3>
+                <p className="text-sm text-muted-foreground mt-1">Capacity: {currentSelected?.capacity}</p>
               </div>
               <div
-                className={`px-4 py-2 rounded-lg ${isClassroomLocked(selectedClassroom.id) ? "bg-red-500/10" : "bg-green-500/10"}`}
+                className={`px-4 py-2 rounded-lg ${isClassroomLocked(currentSelected?.id || "") ? "bg-red-500/10" : "bg-green-500/10"}`}
               >
                 <div className="flex items-center gap-2">
-                  {isClassroomLocked(selectedClassroom.id) ? (
+                  {isClassroomLocked(currentSelected?.id || "") ? (
                     <>
                       <Lock size={20} className="text-red-600" />
                       <span className="font-semibold text-red-600">Locked</span>
@@ -123,7 +153,7 @@ export function ClassroomsPage() {
                     <tr key={timeSlot} className="border-b border-border hover:bg-muted/30">
                       <td className="py-3 px-3 font-medium text-foreground whitespace-nowrap">{timeSlot}</td>
                       {DAYS.map((day) => {
-                        const classSession = getClassForSlot(selectedClassroom.id, day, timeSlot)
+                        const classSession = getClassForSlot(currentSelected?.id || "", day, timeSlot)
                         return (
                           <td key={`${day}-${timeSlot}`} className="py-3 px-3">
                             {classSession ? (
@@ -152,7 +182,7 @@ export function ClassroomsPage() {
           <Card className="p-6">
             <h3 className="font-semibold text-foreground mb-4">All Classrooms Status</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {mockClassrooms.map((classroom) => (
+              {classrooms.map((classroom) => (
                 <div key={classroom.id} className="border border-border rounded-lg p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
@@ -179,6 +209,13 @@ export function ClassroomsPage() {
           </Card>
         </div>
       </div>
+
+      {showAddDialog && (
+        <AddClassroomDialog
+          onAdd={addClassroom}
+          onClose={() => setShowAddDialog(false)}
+        />
+      )}
     </div>
   )
 }

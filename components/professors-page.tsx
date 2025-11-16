@@ -3,19 +3,25 @@
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Download, Eye, EyeOff, Mail, Clock } from "lucide-react"
+import { Download, Eye, EyeOff, Mail, Clock, Plus, Trash2 } from 'lucide-react'
 import { QRCodeDisplay } from "./qr-code-display"
 import { sendQRCodeEmail } from "@/app/actions/send-qr-email"
 import { mockProfessors, mockClassSessions } from "@/lib/real-time-data"
+import { useProfessorsStorage } from "@/hooks/use-professors-storage"
+import { AddProfessorDialog } from "./add-professor-dialog"
 
 const DAYS_ORDER = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi"]
 const TIME_SLOTS = ["08:15", "10:00", "11:45", "14:00", "15:30", "17:00"]
 
 export function ProfessorsPage() {
+  const { professors, addProfessor, deleteProfessor, isLoaded } = useProfessorsStorage(mockProfessors)
   const [selectedProfessor, setSelectedProfessor] = useState(mockProfessors[0])
   const [visibleQRs, setVisibleQRs] = useState<Set<string>>(new Set())
   const [sendingEmail, setSendingEmail] = useState<string | null>(null)
   const [emailStatus, setEmailStatus] = useState<{ [key: string]: string }>({})
+  const [showAddDialog, setShowAddDialog] = useState(false)
+
+  const currentSelected = professors.find((p) => p.professorId === selectedProfessor.professorId) || professors[0]
 
   const toggleQRVisibility = (id: string) => {
     const newVisible = new Set(visibleQRs)
@@ -27,13 +33,14 @@ export function ProfessorsPage() {
     setVisibleQRs(newVisible)
   }
 
-  const downloadQRCode = (professor: (typeof mockProfessors)[0]) => {
+  const downloadQRCode = (professor: (typeof professors)[0]) => {
     const svg = document.getElementById(`qr-${professor.professorId}`)
     if (svg) {
       const svgData = new XMLSerializer().serializeToString(svg)
       const canvas = document.createElement("canvas")
       const ctx = canvas.getContext("2d")
       const img = new Image()
+      img.crossOrigin = "anonymous"
 
       img.onload = () => {
         canvas.width = img.width
@@ -49,7 +56,7 @@ export function ProfessorsPage() {
     }
   }
 
-  const handleSendEmail = async (professor: (typeof mockProfessors)[0]) => {
+  const handleSendEmail = async (professor: (typeof professors)[0]) => {
     setSendingEmail(professor.professorId)
     const result = await sendQRCodeEmail(professor.name, professor.email, `PROF_${professor.professorId}`)
     setEmailStatus((prev) => ({
@@ -71,6 +78,10 @@ export function ProfessorsPage() {
       (session) => session.instructor.includes(professorName) && session.day === day && session.startTime === time,
     )
 
+  if (!isLoaded) {
+    return <div className="p-8">Loading...</div>
+  }
+
   return (
     <div className="p-8">
       <div className="mb-8">
@@ -84,21 +95,41 @@ export function ProfessorsPage() {
         {/* Professors List Sidebar */}
         <div className="lg:col-span-1">
           <Card className="p-4 h-fit">
-            <h3 className="font-semibold text-foreground mb-4">Professors</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-foreground">Professors</h3>
+              <Button
+                onClick={() => setShowAddDialog(true)}
+                size="sm"
+                variant="ghost"
+                className="text-primary hover:bg-primary/10"
+              >
+                <Plus size={16} />
+              </Button>
+            </div>
             <div className="space-y-2">
-              {mockProfessors.map((prof) => (
-                <button
+              {professors.map((prof) => (
+                <div
                   key={prof.professorId}
-                  onClick={() => setSelectedProfessor(prof)}
-                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                    selectedProfessor?.professorId === prof.professorId
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted bg-muted/50"
-                  }`}
+                  className="flex items-center gap-2 group"
                 >
-                  <div className="font-medium text-sm">{prof.name}</div>
-                  <div className="text-xs opacity-75">{prof.totalHoursPerWeek}h/week</div>
-                </button>
+                  <button
+                    onClick={() => setSelectedProfessor(prof)}
+                    className={`flex-1 text-left px-4 py-3 rounded-lg transition-colors ${
+                      currentSelected?.professorId === prof.professorId
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-muted bg-muted/50"
+                    }`}
+                  >
+                    <div className="font-medium text-sm">{prof.name}</div>
+                    <div className="text-xs opacity-75">{prof.totalHoursPerWeek}h/week</div>
+                  </button>
+                  <button
+                    onClick={() => deleteProfessor(prof.professorId)}
+                    className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-500 transition-all p-2"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               ))}
             </div>
           </Card>
@@ -106,22 +137,22 @@ export function ProfessorsPage() {
 
         {/* Professor Details */}
         <div className="lg:col-span-3 space-y-6">
-          {selectedProfessor && (
+          {currentSelected && (
             <>
               <Card className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-2xl font-bold text-foreground">{selectedProfessor.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{selectedProfessor.department}</p>
+                    <h3 className="text-2xl font-bold text-foreground">{currentSelected.name}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">{currentSelected.department}</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-primary">{selectedProfessor.totalHoursPerWeek}h</div>
+                    <div className="text-3xl font-bold text-primary">{currentSelected.totalHoursPerWeek}h</div>
                     <p className="text-xs text-muted-foreground">Total hours/week</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Clock size={16} />
-                  {selectedProfessor.email}
+                  {currentSelected.email}
                 </div>
               </Card>
 
@@ -132,20 +163,20 @@ export function ProfessorsPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => toggleQRVisibility(selectedProfessor.professorId)}
+                    onClick={() => toggleQRVisibility(currentSelected.professorId)}
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    {visibleQRs.has(selectedProfessor.professorId) ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {visibleQRs.has(currentSelected.professorId) ? <EyeOff size={16} /> : <Eye size={16} />}
                   </Button>
                 </div>
 
                 <div className="border border-border rounded-lg p-6 bg-muted/30">
-                  {visibleQRs.has(selectedProfessor.professorId) ? (
+                  {visibleQRs.has(currentSelected.professorId) ? (
                     <div className="flex flex-col items-center gap-4">
-                      <div id={`qr-${selectedProfessor.professorId}`} className="bg-white p-4 rounded">
-                        <QRCodeDisplay value={`PROF_${selectedProfessor.professorId}`} size={150} />
+                      <div id={`qr-${currentSelected.professorId}`} className="bg-white p-4 rounded">
+                        <QRCodeDisplay value={`PROF_${currentSelected.professorId}`} size={150} />
                       </div>
-                      <p className="text-xs text-muted-foreground text-center break-all">{`PROF_${selectedProfessor.professorId}`}</p>
+                      <p className="text-xs text-muted-foreground text-center break-all">{`PROF_${currentSelected.professorId}`}</p>
                     </div>
                   ) : (
                     <div className="h-40 flex items-center justify-center bg-background rounded border border-dashed border-border">
@@ -158,7 +189,7 @@ export function ProfessorsPage() {
               {/* Action Buttons */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Button
-                  onClick={() => downloadQRCode(selectedProfessor)}
+                  onClick={() => downloadQRCode(currentSelected)}
                   variant="outline"
                   className="flex items-center justify-center gap-2 h-10"
                 >
@@ -166,19 +197,19 @@ export function ProfessorsPage() {
                   Download QR Code
                 </Button>
                 <Button
-                  onClick={() => handleSendEmail(selectedProfessor)}
-                  disabled={sendingEmail === selectedProfessor.professorId}
+                  onClick={() => handleSendEmail(currentSelected)}
+                  disabled={sendingEmail === currentSelected.professorId}
                   className="bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center gap-2 h-10"
                 >
                   <Mail size={16} />
-                  {sendingEmail === selectedProfessor.professorId ? "Sending..." : "Send Email"}
+                  {sendingEmail === currentSelected.professorId ? "Sending..." : "Send Email"}
                 </Button>
               </div>
 
               {/* Status Message */}
-              {emailStatus[selectedProfessor.professorId] && (
+              {emailStatus[currentSelected.professorId] && (
                 <div className="p-3 bg-green-50 border border-green-200 rounded text-sm text-green-700">
-                  {emailStatus[selectedProfessor.professorId]}
+                  {emailStatus[currentSelected.professorId]}
                 </div>
               )}
 
@@ -201,7 +232,7 @@ export function ProfessorsPage() {
                         <tr key={time} className="border-b border-border hover:bg-muted/30">
                           <td className="py-3 px-3 font-medium text-foreground whitespace-nowrap">{time}</td>
                           {DAYS_ORDER.map((day) => {
-                            const classSession = getClassForSlot(selectedProfessor.name, day, time)
+                            const classSession = getClassForSlot(currentSelected.name, day, time)
                             return (
                               <td key={`${day}-${time}`} className="py-3 px-3">
                                 {classSession ? (
@@ -229,6 +260,13 @@ export function ProfessorsPage() {
           )}
         </div>
       </div>
+
+      {showAddDialog && (
+        <AddProfessorDialog
+          onAdd={addProfessor}
+          onClose={() => setShowAddDialog(false)}
+        />
+      )}
     </div>
   )
 }
