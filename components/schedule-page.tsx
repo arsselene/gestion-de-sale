@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Clock, MapPin, Users } from "lucide-react"
-import { mockClassSessions } from "@/lib/real-time-data"
+import { useState } from 'react'
+import { Card } from '@/components/ui/card'
+import { Clock, MapPin, Users } from 'lucide-react'
+import { useAppStore } from '@/lib/app-context'
 
 const DAYS_ORDER = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi"]
 const TIME_SLOTS = ["08:15", "10:00", "11:45", "14:00", "15:30", "17:00"]
@@ -22,12 +22,12 @@ const getTypeColor = (type: string) => {
 }
 
 export function SchedulePage() {
+  const { classSessions } = useAppStore()
   const [selectedDay, setSelectedDay] = useState("Dimanche")
 
-  const getDaySchedules = (day: string) => mockClassSessions.filter((s) => s.day === day)
-
+  const getDaySchedules = (day: string) => classSessions.filter((s) => s.day === day)
   const getScheduleForSlot = (day: string, time: string) =>
-    mockClassSessions.find((s) => s.day === day && s.startTime === time)
+    classSessions.find((s) => s.day === day && s.startTime === time)
 
   return (
     <div className="p-8">
@@ -82,9 +82,7 @@ export function SchedulePage() {
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <div className="font-semibold text-base text-foreground">{schedule.courseTitle}</div>
-                      <span
-                        className={`inline-block text-xs px-3 py-1 rounded-full mt-2 font-medium bg-opacity-20 border`}
-                      >
+                      <span className={`inline-block text-xs px-3 py-1 rounded-full mt-2 font-medium bg-opacity-20 border`}>
                         {schedule.type}
                       </span>
                     </div>
@@ -96,15 +94,11 @@ export function SchedulePage() {
                   <div className="space-y-2 text-sm text-muted-foreground mt-3">
                     <div className="flex items-center gap-2">
                       <Clock size={16} />
-                      <span>
-                        {schedule.startTime} - {schedule.endTime}
-                      </span>
+                      <span>{schedule.startTime} - {schedule.endTime}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin size={16} />
-                      <span>
-                        {schedule.location} • Class {schedule.classLevel}
-                      </span>
+                      <span>{schedule.location} • Class {schedule.classLevel}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Users size={16} />

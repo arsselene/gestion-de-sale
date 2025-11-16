@@ -1,31 +1,32 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { X } from 'lucide-react'
+import { useAppStore } from '@/lib/app-context'
 
 interface AddProfessorDialogProps {
-  onAdd: (professor: { name: string; email: string; department: string; totalHoursPerWeek: number }) => void
   onClose: () => void
 }
 
-export function AddProfessorDialog({ onAdd, onClose }: AddProfessorDialogProps) {
+export function AddProfessorDialog({ onClose }: AddProfessorDialogProps) {
+  const { addProfessor } = useAppStore()
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    department: "GSI",
+    name: '',
+    email: '',
+    department: 'GSI',
     totalHoursPerWeek: 6,
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (formData.name.trim() && formData.email.trim() && formData.department.trim()) {
-      onAdd(formData)
+      addProfessor(formData)
       setFormData({
-        name: "",
-        email: "",
-        department: "GSI",
+        name: '',
+        email: '',
+        department: 'GSI',
         totalHoursPerWeek: 6,
       })
       onClose()
@@ -37,10 +38,7 @@ export function AddProfessorDialog({ onAdd, onClose }: AddProfessorDialogProps) 
       <Card className="w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-foreground">Add New Professor</h2>
-          <button
-            onClick={onClose}
-            className="text-muted-foreground hover:text-foreground"
-          >
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X size={20} />
           </button>
         </div>
@@ -103,18 +101,10 @@ export function AddProfessorDialog({ onAdd, onClose }: AddProfessorDialogProps) 
           </div>
 
           <div className="flex gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className="flex-1"
-            >
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
               Cancel
             </Button>
-            <Button
-              type="submit"
-              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-            >
+            <Button type="submit" className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
               Add Professor
             </Button>
           </div>

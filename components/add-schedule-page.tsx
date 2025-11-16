@@ -1,509 +1,246 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Plus, Trash2, Save, X } from "lucide-react"
-
-interface ScheduleSlot {
-  id: string
-  day: string
-  startTime: string
-  endTime: string
-  courseTitle: string
-  type: "Cours" | "TP" | "TD"
-  instructor: string
-  location: string
-}
-
-interface WeeklySchedule {
-  id: string
-  name: string
-  department: string
-  specialty: string
-  semester: string
-  createdAt: string
-  slots: ScheduleSlot[]
-}
+import { useState } from 'react'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Plus, Trash2, X, Save } from 'lucide-react'
+import { useAppStore } from '@/lib/app-context'
 
 const DAYS = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi"]
-const TIME_SLOTS = ["08h15", "09h00", "10h00", "11h45", "14h00", "15h30", "17h00"]
 
 export function AddSchedulePage() {
-  const [schedules, setSchedules] = useState<WeeklySchedule[]>([
-    {
-      id: "sched-001",
-      name: "3ème Année Ingénieur",
-      department: "Génie des Systèmes Informatiques",
-      specialty: "Réseaux et Télécommunication (RT)",
-      semester: "Semestre 5",
-      createdAt: "2024-01-15",
-      slots: [
-        // Dimanche (Sunday)
-        {
-          id: "slot-1",
-          day: "Dimanche",
-          startTime: "08h15",
-          endTime: "09h45",
-          courseTitle: "Entreprise resource planning",
-          type: "TP",
-          instructor: "Dr. Khiat / Mlle Senoussaoui",
-          location: "LAB-01",
-        },
-        {
-          id: "slot-2",
-          day: "Dimanche",
-          startTime: "10h00",
-          endTime: "11h30",
-          courseTitle: "ITIL",
-          type: "TP",
-          instructor: "Dr. Khiat / Mlle Senoussaoui",
-          location: "LAB-01",
-        },
-        {
-          id: "slot-3",
-          day: "Dimanche",
-          startTime: "14h00",
-          endTime: "15h30",
-          courseTitle: "Systèmes Embarqués",
-          type: "Cours",
-          instructor: "Dr. Belbachir",
-          location: "S-214",
-        },
-        {
-          id: "slot-4",
-          day: "Dimanche",
-          startTime: "15h30",
-          endTime: "17h00",
-          courseTitle: "Systèmes Embarqués",
-          type: "TD",
-          instructor: "Dr. Belbachir",
-          location: "S-214",
-        },
-        // Lundi (Monday)
-        {
-          id: "slot-5",
-          day: "Lundi",
-          startTime: "08h15",
-          endTime: "09h45",
-          courseTitle: "Travail collaboratif",
-          type: "Cours",
-          instructor: "Mme SI Moussa",
-          location: "S-212",
-        },
-        {
-          id: "slot-6",
-          day: "Lundi",
-          startTime: "10h00",
-          endTime: "11h30",
-          courseTitle: "Fouille de données et recherche d'information",
-          type: "TP",
-          instructor: "Dr. Kabli",
-          location: "LAB-03",
-        },
-        {
-          id: "slot-7",
-          day: "Lundi",
-          startTime: "11h45",
-          endTime: "13h15",
-          courseTitle: "Fouille de données et recherche d'information",
-          type: "Cours",
-          instructor: "Dr. Kabli",
-          location: "S-212",
-        },
-        {
-          id: "slot-8",
-          day: "Lundi",
-          startTime: "14h00",
-          endTime: "15h30",
-          courseTitle: "ERP",
-          type: "Cours",
-          instructor: "Dr. Khiat",
-          location: "S-212",
-        },
-        {
-          id: "slot-9",
-          day: "Lundi",
-          startTime: "15h30",
-          endTime: "17h00",
-          courseTitle: "ITIL",
-          type: "Cours",
-          instructor: "MR Khiat",
-          location: "S212",
-        },
-        // Mardi (Tuesday)
-        {
-          id: "slot-10",
-          day: "Mardi",
-          startTime: "08h15",
-          endTime: "09h45",
-          courseTitle: "EDI",
-          type: "Cours",
-          instructor: "Dr. Mezzoudj",
-          location: "S-212",
-        },
-        {
-          id: "slot-11",
-          day: "Mardi",
-          startTime: "10h00",
-          endTime: "11h30",
-          courseTitle: "Antennes imprimées",
-          type: "Cours",
-          instructor: "Dr. Didouh",
-          location: "S-212",
-        },
-        {
-          id: "slot-12",
-          day: "Mardi",
-          startTime: "11h45",
-          endTime: "13h15",
-          courseTitle: "EDI",
-          type: "TP",
-          instructor: "Dr. Mezzoudj",
-          location: "LAB-01",
-        },
-        // Mercredi (Wednesday)
-        {
-          id: "slot-13",
-          day: "Mercredi",
-          startTime: "08h15",
-          endTime: "09h45",
-          courseTitle: "Sécurité des réseaux de Télécommunication",
-          type: "TP",
-          instructor: "Dr. Mezzoudj",
-          location: "LAB-03",
-        },
-        {
-          id: "slot-14",
-          day: "Mercredi",
-          startTime: "10h00",
-          endTime: "11h30",
-          courseTitle: "Sécurité des réseaux de Télécommunication",
-          type: "Cours",
-          instructor: "Dr. Mezzoudj",
-          location: "S-212",
-        },
-        {
-          id: "slot-15",
-          day: "Mercredi",
-          startTime: "11h45",
-          endTime: "13h15",
-          courseTitle: "Fouille de données et recherche d'information",
-          type: "TD",
-          instructor: "Dr. Kabli",
-          location: "S-212",
-        },
-        {
-          id: "slot-16",
-          day: "Mercredi",
-          startTime: "14h00",
-          endTime: "15h30",
-          courseTitle: "Cloud Computing Virtualisation",
-          type: "Cours",
-          instructor: "Dr. Mezzoudj",
-          location: "S-212",
-        },
-        {
-          id: "slot-17",
-          day: "Mercredi",
-          startTime: "15h30",
-          endTime: "17h00",
-          courseTitle: "Cloud Computing Virtualisation",
-          type: "TP",
-          instructor: "Dr. Mezzoudj",
-          location: "LAB-02",
-        },
-        // Jeudi (Thursday)
-        {
-          id: "slot-18",
-          day: "Jeudi",
-          startTime: "10h00",
-          endTime: "11h30",
-          courseTitle: "Rédaction scientifique",
-          type: "Cours",
-          instructor: "Pr. Brahimi",
-          location: "S-212",
-        },
-        {
-          id: "slot-19",
-          day: "Jeudi",
-          startTime: "11h45",
-          endTime: "13h15",
-          courseTitle: "Travail collaboratif",
-          type: "TP",
-          instructor: "Dr. Belbachir",
-          location: "LAB-01",
-        },
-      ],
-    },
-  ])
-
-  const [editingSchedule, setEditingSchedule] = useState<WeeklySchedule | null>(null)
-  const [showNewSlot, setShowNewSlot] = useState(false)
-  const [newSlot, setNewSlot] = useState<Partial<ScheduleSlot>>({
-    day: "Dimanche",
-    startTime: "08h15",
-    endTime: "09h45",
-    courseTitle: "",
-    type: "Cours",
-    instructor: "",
-    location: "",
+  const { classrooms, professors, classSessions, addClassSession, deleteClassSession } = useAppStore()
+  const [showNewClass, setShowNewClass] = useState(false)
+  const [newClass, setNewClass] = useState({
+    courseTitle: '',
+    type: 'Cours' as const,
+    instructor: professors[0]?.name || '',
+    location: classrooms[0]?.id || '',
+    day: 'Dimanche',
+    startTime: '08:15',
+    endTime: '09:45',
+    capacity: 30,
+    currentOccupancy: 0,
+    classLevel: '3ème',
   })
 
-  const addSchedule = () => {
-    const schedule: WeeklySchedule = {
-      id: `sched-${Date.now()}`,
-      name: "New Schedule",
-      department: "Department",
-      specialty: "Specialty",
-      semester: "Semester",
-      createdAt: new Date().toISOString().split("T")[0],
-      slots: [],
-    }
-    setSchedules([...schedules, schedule])
-  }
-
-  const addSlotToSchedule = (scheduleId: string) => {
-    if (!newSlot.courseTitle || !newSlot.instructor || !newSlot.location) {
-      alert("Please fill all fields")
+  const handleAddClass = () => {
+    if (!newClass.courseTitle.trim() || !newClass.instructor.trim() || !newClass.location.trim()) {
+      alert('Please fill all required fields')
       return
     }
 
-    setSchedules(
-      schedules.map((sched) =>
-        sched.id === scheduleId
-          ? {
-              ...sched,
-              slots: [
-                ...sched.slots,
-                {
-                  id: `slot-${Date.now()}`,
-                  day: newSlot.day || "Dimanche",
-                  startTime: newSlot.startTime || "08h15",
-                  endTime: newSlot.endTime || "09h45",
-                  courseTitle: newSlot.courseTitle || "",
-                  type: (newSlot.type || "Cours") as "Cours" | "TP" | "TD",
-                  instructor: newSlot.instructor || "",
-                  location: newSlot.location || "",
-                },
-              ],
-            }
-          : sched,
-      ),
-    )
-    setNewSlot({
-      day: "Dimanche",
-      startTime: "08h15",
-      endTime: "09h45",
-      courseTitle: "",
-      type: "Cours",
-      instructor: "",
-      location: "",
+    addClassSession({
+      courseTitle: newClass.courseTitle,
+      type: newClass.type,
+      instructor: newClass.instructor,
+      location: newClass.location,
+      day: newClass.day,
+      startTime: newClass.startTime,
+      endTime: newClass.endTime,
+      capacity: newClass.capacity,
+      currentOccupancy: newClass.currentOccupancy,
+      classLevel: newClass.classLevel,
     })
-    setShowNewSlot(false)
+
+    setNewClass({
+      courseTitle: '',
+      type: 'Cours',
+      instructor: professors[0]?.name || '',
+      location: classrooms[0]?.id || '',
+      day: 'Dimanche',
+      startTime: '08:15',
+      endTime: '09:45',
+      capacity: 30,
+      currentOccupancy: 0,
+      classLevel: '3ème',
+    })
+    setShowNewClass(false)
   }
 
-  const deleteSlot = (scheduleId: string, slotId: string) => {
-    setSchedules(
-      schedules.map((sched) =>
-        sched.id === scheduleId
-          ? {
-              ...sched,
-              slots: sched.slots.filter((slot) => slot.id !== slotId),
-            }
-          : sched,
-      ),
-    )
-  }
-
-  const deleteSchedule = (id: string) => {
-    setSchedules(schedules.filter((s) => s.id !== id))
-  }
+  // Group classes by day
+  const getClassesByDay = (day: string) => classSessions.filter((c) => c.day === day)
 
   return (
     <div className="p-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-foreground">Schedule Management</h2>
-          <p className="text-muted-foreground mt-2">Create and manage weekly class schedules.</p>
+          <h2 className="text-3xl font-bold text-foreground">Add Classes to Schedule</h2>
+          <p className="text-muted-foreground mt-2">Create and manage class sessions for each room</p>
         </div>
         <Button
-          onClick={addSchedule}
+          onClick={() => setShowNewClass(true)}
           className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2"
         >
           <Plus size={18} />
-          Add Schedule
+          Add Class
         </Button>
       </div>
 
-      {/* Schedules List */}
-      <div className="space-y-6">
-        {schedules.map((schedule) => (
-          <Card key={schedule.id} className="p-6">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h3 className="text-2xl font-semibold text-foreground">{schedule.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{schedule.department}</p>
-                <p className="text-sm text-muted-foreground">{schedule.specialty}</p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => deleteSchedule(schedule.id)}
-                className="text-destructive"
+      {/* Add Class Form */}
+      {showNewClass && (
+        <Card className="p-6 mb-8 border-2 border-primary">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-foreground">New Class Session</h3>
+            <button onClick={() => setShowNewClass(false)} className="text-muted-foreground hover:text-foreground">
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div>
+              <label className="text-sm font-medium text-foreground block mb-2">Course Title *</label>
+              <input
+                type="text"
+                value={newClass.courseTitle}
+                onChange={(e) => setNewClass({ ...newClass, courseTitle: e.target.value })}
+                placeholder="e.g., Advanced Database"
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-foreground block mb-2">Day *</label>
+              <select
+                value={newClass.day}
+                onChange={(e) => setNewClass({ ...newClass, day: e.target.value })}
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <Trash2 size={16} />
-              </Button>
+                {DAYS.map((day) => (
+                  <option key={day} value={day}>
+                    {day}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* Schedule Table */}
-            <div className="overflow-x-auto mb-6">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-muted">
-                    {DAYS.map((day) => (
-                      <th
-                        key={day}
-                        className="border border-border px-4 py-3 text-left text-sm font-semibold text-foreground"
-                      >
-                        {day}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* Get unique times */}
-                  {Array.from(new Set(schedule.slots.map((s) => s.startTime))).map((time) => (
-                    <tr key={time} className="hover:bg-muted/50">
-                      {DAYS.map((day) => {
-                        const slot = schedule.slots.find((s) => s.day === day && s.startTime === time)
-                        return (
-                          <td key={`${day}-${time}`} className="border border-border px-4 py-4 text-sm">
-                            {slot ? (
-                              <div className="bg-blue-50 border border-blue-200 rounded p-3">
-                                <div className="font-semibold text-blue-900">{slot.courseTitle}</div>
-                                <div className="text-xs text-blue-700 mt-1">{slot.type}</div>
-                                <div className="text-xs text-blue-600 mt-1">{slot.instructor}</div>
-                                <div className="text-xs text-blue-600">{slot.location}</div>
-                                <div className="text-xs text-blue-600">
-                                  {slot.startTime} - {slot.endTime}
-                                </div>
-                                <button
-                                  onClick={() => deleteSlot(schedule.id, slot.id)}
-                                  className="mt-2 text-xs text-red-600 hover:text-red-800"
-                                >
-                                  <Trash2 size={12} className="inline mr-1" />
-                                  Remove
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="h-24 bg-muted/30 rounded flex items-center justify-center text-xs text-muted-foreground">
-                                —
-                              </div>
-                            )}
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div>
+              <label className="text-sm font-medium text-foreground block mb-2">Start Time *</label>
+              <input
+                type="time"
+                value={newClass.startTime.replace(':', ':')}
+                onChange={(e) => setNewClass({ ...newClass, startTime: e.target.value })}
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              />
             </div>
 
-            {/* Add Slot Form */}
-            <div className="bg-muted/30 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="font-semibold text-foreground">Add Class Slot</h4>
-                <Button
-                  onClick={() => setShowNewSlot(!showNewSlot)}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <Plus size={14} />
-                  Add Slot
-                </Button>
-              </div>
+            <div>
+              <label className="text-sm font-medium text-foreground block mb-2">End Time *</label>
+              <input
+                type="time"
+                value={newClass.endTime.replace(':', ':')}
+                onChange={(e) => setNewClass({ ...newClass, endTime: e.target.value })}
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
 
-              {showNewSlot && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <select
-                    value={newSlot.day}
-                    onChange={(e) => setNewSlot({ ...newSlot, day: e.target.value })}
-                    className="px-3 py-2 border border-border rounded-lg bg-background text-foreground text-sm"
-                  >
-                    {DAYS.map((day) => (
-                      <option key={day} value={day}>
-                        {day}
-                      </option>
-                    ))}
-                  </select>
+            <div>
+              <label className="text-sm font-medium text-foreground block mb-2">Type *</label>
+              <select
+                value={newClass.type}
+                onChange={(e) => setNewClass({ ...newClass, type: e.target.value as any })}
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="Cours">Cours (Lecture)</option>
+                <option value="TP">TP (Practical)</option>
+                <option value="TD">TD (Tutorial)</option>
+              </select>
+            </div>
 
-                  <input
-                    type="text"
-                    placeholder="Start Time (e.g., 08h15)"
-                    value={newSlot.startTime}
-                    onChange={(e) => setNewSlot({ ...newSlot, startTime: e.target.value })}
-                    className="px-3 py-2 border border-border rounded-lg bg-background text-foreground text-sm"
-                  />
+            <div>
+              <label className="text-sm font-medium text-foreground block mb-2">Instructor *</label>
+              <select
+                value={newClass.instructor}
+                onChange={(e) => setNewClass({ ...newClass, instructor: e.target.value })}
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                {professors.map((prof) => (
+                  <option key={prof.professorId} value={prof.name}>
+                    {prof.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                  <input
-                    type="text"
-                    placeholder="End Time (e.g., 09h45)"
-                    value={newSlot.endTime}
-                    onChange={(e) => setNewSlot({ ...newSlot, endTime: e.target.value })}
-                    className="px-3 py-2 border border-border rounded-lg bg-background text-foreground text-sm"
-                  />
+            <div>
+              <label className="text-sm font-medium text-foreground block mb-2">Classroom *</label>
+              <select
+                value={newClass.location}
+                onChange={(e) => setNewClass({ ...newClass, location: e.target.value })}
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                {classrooms.map((room) => (
+                  <option key={room.id} value={room.id}>
+                    {room.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                  <select
-                    value={newSlot.type}
-                    onChange={(e) => setNewSlot({ ...newSlot, type: e.target.value as "Cours" | "TP" | "TD" })}
-                    className="px-3 py-2 border border-border rounded-lg bg-background text-foreground text-sm"
-                  >
-                    <option value="Cours">Cours (Lecture)</option>
-                    <option value="TP">TP (Practical)</option>
-                    <option value="TD">TD (Tutorial)</option>
-                  </select>
+            <div>
+              <label className="text-sm font-medium text-foreground block mb-2">Class Level</label>
+              <input
+                type="text"
+                value={newClass.classLevel}
+                onChange={(e) => setNewClass({ ...newClass, classLevel: e.target.value })}
+                placeholder="3ème"
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+          </div>
 
-                  <input
-                    type="text"
-                    placeholder="Course Title"
-                    value={newSlot.courseTitle}
-                    onChange={(e) => setNewSlot({ ...newSlot, courseTitle: e.target.value })}
-                    className="px-3 py-2 border border-border rounded-lg bg-background text-foreground text-sm"
-                  />
+          <div className="flex gap-2">
+            <Button
+              onClick={handleAddClass}
+              className="flex-1 bg-green-600 text-white hover:bg-green-700 flex items-center justify-center gap-2"
+            >
+              <Save size={16} />
+              Save Class
+            </Button>
+            <Button
+              onClick={() => setShowNewClass(false)}
+              variant="outline"
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+          </div>
+        </Card>
+      )}
 
-                  <input
-                    type="text"
-                    placeholder="Instructor"
-                    value={newSlot.instructor}
-                    onChange={(e) => setNewSlot({ ...newSlot, instructor: e.target.value })}
-                    className="px-3 py-2 border border-border rounded-lg bg-background text-foreground text-sm"
-                  />
+      {/* Classes by Day */}
+      <div className="space-y-6">
+        {DAYS.map((day) => (
+          <Card key={day} className="p-6">
+            <h3 className="text-xl font-semibold text-foreground mb-4">
+              {day} ({getClassesByDay(day).length} classes)
+            </h3>
 
-                  <input
-                    type="text"
-                    placeholder="Location (e.g., LAB-01)"
-                    value={newSlot.location}
-                    onChange={(e) => setNewSlot({ ...newSlot, location: e.target.value })}
-                    className="px-3 py-2 border border-border rounded-lg bg-background text-foreground text-sm"
-                  />
-
-                  <div className="flex gap-2 lg:col-span-1">
-                    <Button
-                      onClick={() => addSlotToSchedule(schedule.id)}
-                      className="flex-1 bg-green-600 text-white hover:bg-green-700 flex items-center justify-center gap-2"
+            {getClassesByDay(day).length > 0 ? (
+              <div className="space-y-3">
+                {getClassesByDay(day).map((classSession) => (
+                  <div key={classSession.id} className="flex items-start justify-between p-4 border border-border rounded-lg hover:bg-muted/30">
+                    <div className="flex-1">
+                      <div className="font-semibold text-foreground">{classSession.courseTitle}</div>
+                      <div className="text-sm text-muted-foreground mt-2">
+                        <p>📅 {classSession.startTime} - {classSession.endTime}</p>
+                        <p>👨‍🏫 {classSession.instructor}</p>
+                        <p>🏛️ {classSession.location}</p>
+                        <p>📚 {classSession.type}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => deleteClassSession(classSession.id)}
+                      className="text-muted-foreground hover:text-red-500 transition-all p-2"
                     >
-                      <Save size={14} />
-                      Save
-                    </Button>
-                    <Button onClick={() => setShowNewSlot(false)} variant="outline" className="flex-1">
-                      <X size={14} />
-                    </Button>
+                      <Trash2 size={18} />
+                    </button>
                   </div>
-                </div>
-              )}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-muted-foreground">No classes scheduled for {day}</div>
+            )}
           </Card>
         ))}
       </div>

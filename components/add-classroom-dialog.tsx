@@ -1,35 +1,32 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { X } from 'lucide-react'
+import { useAppStore } from '@/lib/app-context'
 
 interface AddClassroomDialogProps {
-  onAdd: (classroom: { id: string; name: string; capacity: number; isLocked: boolean; lastAccess: string; currentClass: null; nextClass: null }) => void
   onClose: () => void
 }
 
-export function AddClassroomDialog({ onAdd, onClose }: AddClassroomDialogProps) {
+export function AddClassroomDialog({ onClose }: AddClassroomDialogProps) {
+  const { addClassroom } = useAppStore()
   const [formData, setFormData] = useState({
-    id: "",
-    name: "",
+    id: '',
+    name: '',
     capacity: 30,
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (formData.id.trim() && formData.name.trim() && formData.capacity > 0) {
-      onAdd({
+      addClassroom({
         id: formData.id,
         name: formData.name,
         capacity: formData.capacity,
-        isLocked: false,
-        lastAccess: "Never",
-        currentClass: null,
-        nextClass: null,
       })
-      setFormData({ id: "", name: "", capacity: 30 })
+      setFormData({ id: '', name: '', capacity: 30 })
       onClose()
     }
   }
@@ -39,10 +36,7 @@ export function AddClassroomDialog({ onAdd, onClose }: AddClassroomDialogProps) 
       <Card className="w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-foreground">Add New Classroom</h2>
-          <button
-            onClick={onClose}
-            className="text-muted-foreground hover:text-foreground"
-          >
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X size={20} />
           </button>
         </div>
@@ -91,18 +85,10 @@ export function AddClassroomDialog({ onAdd, onClose }: AddClassroomDialogProps) 
           </div>
 
           <div className="flex gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className="flex-1"
-            >
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
               Cancel
             </Button>
-            <Button
-              type="submit"
-              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-            >
+            <Button type="submit" className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
               Add Classroom
             </Button>
           </div>
