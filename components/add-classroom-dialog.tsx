@@ -13,22 +13,32 @@ interface AddClassroomDialogProps {
 export function AddClassroomDialog({ onClose }: AddClassroomDialogProps) {
   const { addClassroom } = useAppStore()
   const [formData, setFormData] = useState({
-    id: '',
     name: '',
     capacity: 30,
   })
+  const [error, setError] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (formData.id.trim() && formData.name.trim() && formData.capacity > 0) {
-      addClassroom({
-        id: formData.id,
-        name: formData.name,
-        capacity: formData.capacity,
-      })
-      setFormData({ id: '', name: '', capacity: 30 })
-      onClose()
+    setError('')
+
+    if (!formData.name.trim()) {
+      setError('Classroom name is required')
+      return
     }
+
+    if (formData.capacity <= 0) {
+      setError('Capacity must be greater than 0')
+      return
+    }
+
+    addClassroom({
+      name: formData.name,
+      capacity: formData.capacity,
+    })
+
+    setFormData({ name: '', capacity: 30 })
+    onClose()
   }
 
   return (
@@ -42,29 +52,17 @@ export function AddClassroomDialog({ onClose }: AddClassroomDialogProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-foreground block mb-1">
-              Classroom ID (e.g., S-212)
-            </label>
-            <input
-              type="text"
-              value={formData.id}
-              onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-              placeholder="S-212"
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              required
-            />
-          </div>
+          {error && <div className="p-3 rounded-lg bg-red-500/10 text-red-600 text-sm">{error}</div>}
 
           <div>
             <label className="text-sm font-medium text-foreground block mb-1">
-              Classroom Name
+              Classroom Name (e.g., S-212)
             </label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Classroom S-212"
+              placeholder="S-212"
               className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               required
             />
@@ -77,7 +75,7 @@ export function AddClassroomDialog({ onClose }: AddClassroomDialogProps) {
             <input
               type="number"
               value={formData.capacity}
-              onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) })}
+              onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) || 0 })}
               min="1"
               className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               required

@@ -18,19 +18,45 @@ export function AddProfessorDialog({ onClose }: AddProfessorDialogProps) {
     department: 'GSI',
     totalHoursPerWeek: 6,
   })
+  const [error, setError] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (formData.name.trim() && formData.email.trim() && formData.department.trim()) {
-      addProfessor(formData)
-      setFormData({
-        name: '',
-        email: '',
-        department: 'GSI',
-        totalHoursPerWeek: 6,
-      })
-      onClose()
+    setError('')
+
+    if (!formData.name.trim()) {
+      setError('Professor name is required')
+      return
     }
+
+    if (!formData.email.trim()) {
+      setError('Email is required')
+      return
+    }
+
+    if (!formData.email.includes('@')) {
+      setError('Please enter a valid email')
+      return
+    }
+
+    if (!formData.department.trim()) {
+      setError('Department is required')
+      return
+    }
+
+    if (formData.totalHoursPerWeek <= 0) {
+      setError('Hours per week must be greater than 0')
+      return
+    }
+
+    addProfessor(formData)
+    setFormData({
+      name: '',
+      email: '',
+      department: 'GSI',
+      totalHoursPerWeek: 6,
+    })
+    onClose()
   }
 
   return (
@@ -44,6 +70,8 @@ export function AddProfessorDialog({ onClose }: AddProfessorDialogProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <div className="p-3 rounded-lg bg-red-500/10 text-red-600 text-sm">{error}</div>}
+
           <div>
             <label className="text-sm font-medium text-foreground block mb-1">
               Professor Name
@@ -93,7 +121,7 @@ export function AddProfessorDialog({ onClose }: AddProfessorDialogProps) {
             <input
               type="number"
               value={formData.totalHoursPerWeek}
-              onChange={(e) => setFormData({ ...formData, totalHoursPerWeek: parseInt(e.target.value) })}
+              onChange={(e) => setFormData({ ...formData, totalHoursPerWeek: parseInt(e.target.value) || 0 })}
               min="1"
               className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               required
